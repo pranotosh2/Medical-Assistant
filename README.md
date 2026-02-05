@@ -55,7 +55,7 @@ streamlit run app.py
 
 ## 🔐 Environment Variables
 
-Create a `.env` file (do NOT commit it):
+Create a `.env` file:
 
 ```
 PINECONE_API_KEY="your_pinecone_key"
