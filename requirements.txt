@@ -1,0 +1,14 @@
+langchain
+langchain-huggingface
+langchain-community
+langchain-core
+streamlit
+python-dotenv
+pypdf
+huggingface-hub
+sentence-transformers
+langchain-pinecone
+langchain-google-genai
+google-generativeai
+
+
