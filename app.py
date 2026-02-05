@@ -8,7 +8,7 @@ from data_loader.loader import format_docs
 from llm import model
 
 # ----------------------------
-# Load env
+# Load environment variables
 # ----------------------------
 load_dotenv()
 
@@ -31,34 +31,34 @@ st.markdown(
         background-color: white;
     }
 
-    .user-box {
-        background-color: #0b5d1e;
-        color: white;
-        padding: 12px 16px;
-        border-radius: 12px;
-        margin-bottom: 10px;
-        width: fit-content;
-        max-width: 80%;
-    }
-
-    .bot-box {
-        background-color: #7A0250;
-        color: white;
-        padding: 12px 16px;
-        border-radius: 12px;
-        margin-bottom: 10px;
-        width: fit-content;
-        max-width: 80%;
-    }
-
     .chat-row {
         display: flex;
         gap: 10px;
         align-items: flex-start;
+        margin-bottom: 12px;
     }
 
     .emoji {
         font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .user-box {
+        background-color: #0b5d1e;  /* dark green */
+        color: white;
+        padding: 12px 16px;
+        border-radius: 14px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .bot-box {
+        background-color: #7A0250;  /* dark pink */
+        color: white;
+        padding: 12px 16px;
+        border-radius: 14px;
+        max-width: 80%;
+        word-wrap: break-word;
     }
     </style>
     """,
@@ -72,10 +72,13 @@ st.title("🩺 Medical Assistant")
 st.caption("Answers are generated only from verified medical documents.")
 
 # ----------------------------
-# UI memory (NOT model memory)
+# Session state (UI only)
 # ----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "chat_active" not in st.session_state:
+    st.session_state.chat_active = True
 
 # ----------------------------
 # Display chat history
@@ -115,13 +118,13 @@ vectorstore = PineconeVectorStore(
 retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
 # ----------------------------
-# Prompt (stateless)
+# Prompt (STATELESS RAG)
 # ----------------------------
 prompt = ChatPromptTemplate.from_messages([
     (
         "system",
         "You are a helpful medical assistant. "
-        "Answer ONLY from the provided context in 2 or 3 sentences. "
+        "Answer ONLY from the provided context in 2–3 sentences. "
         "If the answer is not present, say 'I don't know.' "
         "Do NOT show reasoning or analysis."
     ),
@@ -135,11 +138,27 @@ Question:
 ])
 
 # ----------------------------
-# Input
+# Input box
 # ----------------------------
-question = st.chat_input("Ask a medical question...")
+question = st.chat_input(
+    "Ask a medical question..."
+    if st.session_state.chat_active
+    else "Chat ended",
+    disabled=not st.session_state.chat_active
+)
 
+# ----------------------------
+# Handle input
+# ----------------------------
 if question:
+    # Exit words
+    if question.lower().strip() in ["exit", "stop", "over"]:
+        st.session_state.messages.append(
+            ("assistant", "👋 Chat ended. Take care and stay healthy!")
+        )
+        st.session_state.chat_active = False
+        st.rerun()
+
     # Store user message
     st.session_state.messages.append(("user", question))
 
@@ -162,4 +181,5 @@ if question:
 # ----------------------------
 if st.button("🧹 Clear Chat"):
     st.session_state.messages = []
+    st.session_state.chat_active = True
     st.rerun()
