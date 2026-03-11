@@ -123,18 +123,19 @@ retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 prompt = ChatPromptTemplate.from_messages([
     (
         "system",
-        "You are a helpful medical assistant. "
-        "Answer ONLY from the provided context in 2–3 sentences. "
-        "If the answer is not present, say 'I don't know.' "
-        "Do NOT show reasoning or analysis."
+        "You are a medical assistant. Use ONLY the provided context to answer the question. "
+        "If the answer is not in the context, say 'I don't know'. "
+        "Keep the answer within 2-3 sentences."
     ),
-    ("human", """
-Context:
+    (
+        "human",
+        """Context:
 {context}
 
-Question:
-{question}
-""")
+Question: {question}
+
+Answer:"""
+    )
 ])
 
 # ----------------------------
@@ -183,3 +184,4 @@ if st.button("🧹 Clear Chat"):
     st.session_state.messages = []
     st.session_state.chat_active = True
     st.rerun()
+
